@@ -889,6 +889,17 @@ add_plugin_actions (GtkUIManager *ui_manager, const gchar *base_path)
                       (gpointer) cbf);
 
     gtk_action_group_add_action (actions, action);
+    /* Give plug-in actions a stable accel path so entries in ~/.config/dia/menurc
+     * can bind keyboard shortcuts to them. Built-in actions get this via
+     * gtk_action_group_add_actions(); the plain _add_action() variant does not
+     * set an accel path, so shortcut lookup would otherwise never resolve. */
+    {
+      char *accel_path = g_strdup_printf ("<Actions>/%s/%s",
+                                          gtk_action_group_get_name (actions),
+                                          cbf->action);
+      gtk_action_set_accel_path (action, accel_path);
+      g_free (accel_path);
+    }
     g_clear_object (&action);
 
     id = ensure_menu_path (ui_manager, actions, menu_path ? menu_path : cbf->menupath, TRUE);
